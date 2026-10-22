@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101114">
+<title>FenMovies · Preview Studio</title>
+<style>
+:root{color-scheme:dark;--bg:#090b10;--panel:#17181e;--muted:#a4a8b2;--accent:#ff9254;--line:#383a42}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:#fafafc}
+body{background:radial-gradient(ellipse at 83% 0%,#382017 0%,#131014 31%,transparent 55%),#090b10}
+main{max-width:780px;margin:auto;padding:28px 21px 80px}
+.brand{display:flex;align-items:center;gap:12px;text-transform:uppercase;letter-spacing:.13em;font-size:12px;font-weight:850;color:#ff9e66}
+.logo{display:grid;place-items:center;width:43px;height:43px;background:#ff92541a;border:1px solid #ff925477;border-radius:14px;font-size:23px}
+h1{font-size:clamp(37px,8vw,64px);line-height:1.02;letter-spacing:-.06em;margin:60px 0 18px}
+h1 em{font-style:normal;color:var(--accent)}
+p{color:var(--muted);line-height:1.55}
+.sub{max-width:550px;font-size:16px}
+.panel{background:linear-gradient(145deg,#1a1a21,#12141a);border:1px solid var(--line);padding:25px;border-radius:22px;margin-top:38px;box-shadow:0 24px 75px #0007}
+.kicker{letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-size:12px;font-weight:800}
+h2{font-size:23px;letter-spacing:-.025em;margin:9px 0}
+#drop{margin-top:23px;background:#0d1015;border:1.5px dashed #68616a;border-radius:15px;padding:30px 16px;text-align:center;cursor:pointer}
+#drop.drag{border-color:var(--accent);background:#30211c}
+#drop strong{display:block;margin-top:9px;font-size:17px;word-break:break-word}
+#drop span{display:block;font-size:13px;color:var(--muted);margin-top:7px}
+input[type=file]{display:none}
+label{display:block;margin:23px 0 9px;color:#dedee3;font-size:13px;font-weight:650}
+input[type=password]{display:block;width:100%;height:52px;padding:0 15px;font:inherit;color:white;background:#0d1015;border:1px solid #444752;border-radius:12px}
+input:focus{outline:2px solid #f3a76d88}
+button{cursor:pointer;border:0;border-radius:11px;font-weight:800;font-size:15px;padding:16px;color:#21130e;background:var(--accent)}
+button:disabled{opacity:.6;cursor:progress}
+button:hover{filter:brightness(1.1)}
+#generate{width:100%;margin-top:23px}
+#status{min-height:24px;margin-top:18px;color:#adb0bb;font-size:13px}
+#status.error{color:#ff9797}
+#status.good{color:#9ce3b9}
+#result{display:none;margin-top:20px;border:1px solid #548969;background:#14261b;border-radius:15px;padding:18px}
+#result.show{display:block}
+#result h3{margin:0 0 8px;color:#a0e1bc}
+#url{display:block;color:#d1efdf;word-break:break-all;line-height:1.5}
+#copy{padding:11px 16px;margin-top:15px;background:#bfecd1;color:#153521}
+.note{font-size:12px;margin:22px 0;color:#9498a4;line-height:1.8}
+footer{color:#71747d;font-size:12px;margin-top:35px}
+@media(max-width:540px){h1{margin-top:40px}.panel{padding:18px}}
+</style></head>
+<body><main>
+<div class="brand"><div class="logo">✦</div>FenMovies · Preview Studio</div>
+<h1>One ZIP.<br><em>One preview link.</em></h1>
+<p class="sub">Upload a static website ZIP and generate a temporary HTTPS preview. Your real FenMovies domain stays untouched.</p>
+<section class="panel">
+<div class="kicker">Preview generator</div><h2>Upload your website</h2>
+<p>Choose a ZIP containing <b>index.html</b>. Supports HTML, CSS, JavaScript, images, and audio.</p>
+<div id="drop" role="button" tabindex="0" aria-label="Choose ZIP"><div style="font-size:34px;color:#ff9254">↑</div><strong id="filename">Choose a ZIP or drop it here</strong><span>Maximum 8 MB · Up to 200 files</span></div>
+<input id="file" type="file" accept=".zip,application/zip">
+<label for="key">Private upload key</label>
+<input id="key" type="password" placeholder="Enter the key provided during setup" autocomplete="off">
+<button id="generate">Generate preview link →</button>
+<div id="status" role="status" aria-live="polite"></div>
+<div id="result"><h3>Preview is ready</h3><a id="url" href="#" target="_blank" rel="noopener noreferrer"></a><button id="copy">Copy link</button><p style="font-size:12px;margin-bottom:0">Anyone with the link can view this preview.</p></div>
+</section>
+<p class="note">Only upload files you own or have permission to publish. Preview links use temporary storage and can disappear after a deployment or restart. This tool creates website previews, not proxy links.</p>
+<footer>FenMovies Preview Studio · Separate from GoDaddy and your live website</footer>
+</main>
+<script>
+(function(){
+ const drop=document.getElementById('drop'),file=document.getElementById('file'),name=document.getElementById('filename'),button=document.getElementById('generate'),status=document.getElementById('status'),result=document.getElementById('result'),link=document.getElementById('url');
+ function update(){name.textContent=file.files[0]?file.files[0].name:'Choose a ZIP or drop it here';}
+ drop.addEventListener('click',()=>file.click());
+ drop.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();file.click();}});
+ for(const n of ['dragenter','dragover'])drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add('drag');});
+ for(const n of ['dragleave','drop'])drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove('drag');});
+ drop.addEventListener('drop',e=>{if(e.dataTransfer.files.length){file.files=e.dataTransfer.files;update();}});
+ file.addEventListener('change',update);
+ button.addEventListener('click',async()=>{
+   result.classList.remove('show');status.className='';const f=file.files[0],key=document.getElementById('key').value;
+   if(!f){status.textContent='Choose a ZIP file first.';status.className='error';return;}
+   if(!key){status.textContent='Enter your private upload key.';status.className='error';return;}
+   if(f.size>8*1024*1024){status.textContent='ZIP must be under 8 MB.';status.className='error';return;}
+   button.disabled=true;status.textContent='Uploading and generating your preview…';
+   try{
+     const resp=await fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/zip','X-Admin-Key':key},body:f});
+     const data=await resp.json();
+     if(!resp.ok)throw Error(data.error||'Upload failed');
+     link.href=data.url;link.textContent=data.url;result.classList.add('show');status.textContent='Preview generated successfully.';status.className='good';
+   }catch(e){status.textContent=e.message;status.className='error';}
+   finally{button.disabled=false;}
+ });
+ document.getElementById('copy').addEventListener('click',async()=>{
+   try{await navigator.clipboard.writeText(link.href);document.getElementById('copy').textContent='Copied!';}
+   catch{window.prompt('Copy preview link:',link.href);}
+ });
+})();
+</script></body></html>
