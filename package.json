@@ -1,0 +1,16 @@
+{
+  "name": "fenmovies-preview-studio",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Owner-controlled temporary ZIP website previews",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16"
+  }
+}
